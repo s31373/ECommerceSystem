@@ -59,6 +59,8 @@ namespace ECommerceSystem.Models
             _orderedItems = new List<OrderedItem>();
 
             _extent.Add(this);
+    
+            customer.AddOrder(this);
         }
 
         public void AddOrderedItem(OrderedItem item)
@@ -86,6 +88,19 @@ namespace ECommerceSystem.Models
             _extent.Clear();
             _nextId = 1;
         }
+        
+        public void SetCustomer(Customer newCustomer)
+        {
+            if (newCustomer == null)
+                throw new ArgumentNullException(nameof(newCustomer));
+            if (Customer == newCustomer)
+                return;
+    
+            Customer?.RemoveOrder(this);
+    
+            Customer = newCustomer;
+    
+            newCustomer.AddOrder(this);
+        }
     }
 }
-

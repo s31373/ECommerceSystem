@@ -25,6 +25,10 @@ namespace ECommerceSystem.Models
         public int LoyaltyPoints { get; set; }
 
         public Address ShippingAddress { get; set; }
+        
+        private List<Order> _orders = new List<Order>();
+        
+        public IReadOnlyList<Order> Orders => _orders.AsReadOnly();
 
         public Customer(string username, string email, string passwordHash, 
                        string firstName, string lastName, string phoneNumber, Address shippingAddress)
@@ -83,6 +87,25 @@ namespace ECommerceSystem.Models
         {
             _customerExtent.Clear();
         }
+        
+        public void AddOrder(Order order)
+        {
+            if (order == null)
+                throw new ArgumentNullException(nameof(order));
+            if (_orders.Contains(order))
+                throw new InvalidOperationException("Order already exists in customer's order list");
+    
+            _orders.Add(order);
+        }
+
+        public void RemoveOrder(Order order)
+        {
+            if (order == null)
+                throw new ArgumentNullException(nameof(order));
+            if (!_orders.Contains(order))
+                throw new InvalidOperationException("Order not found in customer's order list");
+    
+            _orders.Remove(order);
+        }
     }
 }
-

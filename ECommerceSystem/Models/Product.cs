@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace ECommerceSystem.Models
 {
@@ -19,9 +20,30 @@ namespace ECommerceSystem.Models
         [StringLength(2000)]
         public string Description { get; set; }
 
+        private string _sku;
+        private List<Category> _categories = new List<Category>();
+
         [Required]
         [StringLength(50, MinimumLength = 1)]
-        public string SKU { get; set; }
+        public string SKU 
+        { 
+            get => _sku;
+            set 
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("SKU cannot be empty");
+                if (_sku == value) 
+                    return;
+        
+                string oldSku = _sku;
+                _sku = value;
+                
+                foreach (var category in _categories.ToList())
+                {
+                    category.UpdateProductKey(oldSku, this);
+                }
+            }
+        }
 
         [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
@@ -59,7 +81,7 @@ namespace ECommerceSystem.Models
             ProductId = _nextId++;
             Name = name;
             Description = description;
-            SKU = sku;
+            _sku = sku;
             Price = price;
             StockQuantity = stockQuantity;
             MinimumStock = minimumStock;
@@ -118,6 +140,34 @@ namespace ECommerceSystem.Models
             _extent.Clear();
             _nextId = 1;
         }
+        
+        public void SetSupplier(Supplier newSupplier)
+        {
+            if (Supplier == newSupplier)
+                return;
+    
+            if (Supplier != null && Supplier.Products.Contains(this))
+            {
+                Supplier.RemoveProduct(this);
+            }
+    
+            Supplier = newSupplier;
+    
+            if (newSupplier != null && !newSupplier.Products.Contains(this))
+            {
+                newSupplier.AddProduct(this);
+            }
+        }
+        
+        internal void AddToCategory(Category category)
+        {
+            if (!_categories.Contains(category))
+                _categories.Add(category);
+        }
+
+        internal void RemoveFromCategory(Category category)
+        {
+            _categories.Remove(category);
+        }
     }
 }
-

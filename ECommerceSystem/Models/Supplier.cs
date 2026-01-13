@@ -26,6 +26,10 @@ namespace ECommerceSystem.Models
 
         private decimal? _rating;
         [Range(0, 5)]
+        
+        private List<Product> _products = new List<Product>();
+        
+        public IReadOnlyList<Product> Products => _products.AsReadOnly();
         public decimal? Rating
         {
             get => _rating;
@@ -85,6 +89,31 @@ namespace ECommerceSystem.Models
             _extent.Clear();
             _nextId = 1;
         }
+        
+        public void AddProduct(Product product)
+        {
+            if (product == null)
+                throw new ArgumentNullException(nameof(product));
+            if (_products.Contains(product))
+                throw new InvalidOperationException("Product already exists in supplier's product list");
+    
+            _products.Add(product);
+    
+            if (product.Supplier != this)
+                product.SetSupplier(this);
+        }
+
+        public void RemoveProduct(Product product)
+        {
+            if (product == null)
+                throw new ArgumentNullException(nameof(product));
+            if (!_products.Contains(product))
+                throw new InvalidOperationException("Product not found in supplier's product list");
+    
+            _products.Remove(product);
+    
+            if (product.Supplier == this)
+                product.SetSupplier(null);
+        }
     }
 }
-
